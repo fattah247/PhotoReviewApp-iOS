@@ -8,10 +8,19 @@
 import SwiftUI
 
 @main
-struct PhotoReviewAppApp: App {
+struct PhotoReviewApp: App {
+    // Instantiate shared singletons or services here, if truly global.
+    let photoLibraryManager = PhotoLibraryManager()
+    let notificationManager = NotificationManager()
+    let photoDataStore = InMemoryPhotoDataStore()  // or your persistent store
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                // Pass dependencies through environment objects or other injection methods.
+                .environmentObject(photoLibraryManager)
+                .environmentObject(notificationManager)
+                .environmentObject(photoDataStore)
         }
     }
 }
