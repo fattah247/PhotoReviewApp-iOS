@@ -41,11 +41,18 @@ class PhotoLibraryManager: ObservableObject {
         }
     }
     
-    func deletePhoto(_ asset: PHAsset, completion: @escaping (Bool) -> Void) {
-        PHPhotoLibrary.shared().performChanges({
-            PHAssetChangeRequest.deleteAssets([asset] as NSArray)
-        }) { success, error in
-            completion(success)
+    func deletePhotoAsync(_ asset: PHAsset) async -> Bool {
+        return await withCheckedContinuation { continuation in
+            PHPhotoLibrary.shared().performChanges({
+                PHAssetChangeRequest.deleteAssets([asset] as NSArray)
+            }, completionHandler: { success, error in
+                if let error = error {
+                    print("Error deleting photo: \(error)")
+                    continuation.resume(returning: false)
+                } else {
+                    continuation.resume(returning: success)
+                }
+            })
         }
     }
 }

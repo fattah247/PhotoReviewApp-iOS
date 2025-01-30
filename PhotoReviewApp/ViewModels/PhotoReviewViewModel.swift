@@ -40,12 +40,6 @@ class PhotoReviewViewModel: ObservableObject {
         }
     }
     
-    func generateDailyPhotos() {
-        let allAssets = photoLibraryManager.allPhotos
-        dailyPhotos = dailySelectionManager.pickRandomPhotos(from: allAssets, count: 10)
-        currentIndex = 0
-    }
-    
     @MainActor
     func generateNewPhotos() {
         let allAssets = photoLibraryManager.allPhotos
@@ -63,38 +57,34 @@ class PhotoReviewViewModel: ObservableObject {
         }
     }
     
-    @MainActor func deleteCurrentPhoto() {
+    @MainActor
+    func deleteCurrentPhoto() async {
         guard currentIndex < dailyPhotos.count else { return }
         let asset = dailyPhotos[currentIndex]
         
         // Move to the next photo immediately
         if currentIndex + 1 < dailyPhotos.count {
-            
             // Proceed to delete the photo asynchronously
-            photoLibraryManager.deletePhoto(asset) { [weak self] success in
-                DispatchQueue.main.async {
-                    guard let self = self else { return }
-                    if success {
-                        // Record the action and remove the photo
-                        self.recordAction(for: asset, action: .deleted)
-                        self.dailyPhotos.remove(at: self.currentIndex)
-                        
-                        // If no photos are left, generate new ones and reset currentIndex to 0
-                        if self.dailyPhotos.isEmpty || !(self.currentIndex + 1 < self.dailyPhotos.count) {
-                            print("AFTER DELETE - No photos left, generating new photos...")
-                            self.generateNewPhotos()
-                            self.currentIndex = 0  // Reset to the first photo
-                        } else {
-                            // Otherwise, update currentIndex to the next valid photo
-                            self.currentIndex += 1
-                        }
-                    } else {
-                        self.errorMessage = "Failed to delete photo."
-                        self.showErrorAlert = true
-                    }
-                }
-            }
+            let success = await photoLibraryManager.deletePhotoAsync(asset)
             
+            if success {
+                // Record the action and remove the photo
+                self.recordAction(for: asset, action: .deleted)
+                self.dailyPhotos.remove(at: self.currentIndex)
+                
+                // If no photos are left, generate new ones and reset currentIndex to 0
+                if self.dailyPhotos.isEmpty || !(self.currentIndex + 1 < self.dailyPhotos.count) {
+                    print("AFTER DELETE - No photos left, generating new photos...")
+                    self.generateNewPhotos()
+                    self.currentIndex = 0  // Reset to the first photo
+                } else {
+                    // Otherwise, update currentIndex to the next valid photo
+                    self.currentIndex += 1
+                }
+            } else {
+                self.errorMessage = "Failed to delete photo."
+                self.showErrorAlert = true
+            }
         } else {
             // If no photos left, generate new ones and reset currentIndex to 0
             print("BEFORE DELETE - No photos left, generating new photos...")
@@ -102,6 +92,7 @@ class PhotoReviewViewModel: ObservableObject {
             self.currentIndex = 0  // Reset to the first photo
         }
     }
+
 
     @MainActor func keepCurrentPhoto() {
         guard currentIndex < dailyPhotos.count else { return }

@@ -16,7 +16,7 @@ struct PhotoReviewView: View {
                 Text("No daily photos yet")
                     .padding()
                 Button("Generate Daily Photos") {
-                    viewModel.generateDailyPhotos()
+                    viewModel.generateNewPhotos()
                 }
                 .padding()
             } else {
@@ -54,7 +54,9 @@ struct PhotoReviewView: View {
                 
                 HStack {
                     Button {
-                        viewModel.deleteCurrentPhoto()
+                        Task {
+                            await viewModel.deleteCurrentPhoto()
+                        }
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
@@ -78,15 +80,18 @@ struct PhotoReviewView: View {
         DragGesture()
             .onEnded { value in
                 let horizontalAmount = value.translation.width
-                if horizontalAmount < -50 {
-                    // Swipe left -> Delete
-                    viewModel.deleteCurrentPhoto()
-                } else if horizontalAmount > 50 {
-                    // Swipe right -> Keep
-                    viewModel.keepCurrentPhoto()
+                Task {
+                    if horizontalAmount < -50 {
+                        // Swipe left -> Delete
+                        await viewModel.deleteCurrentPhoto()
+                    } else if horizontalAmount > 50 {
+                        // Swipe right -> Keep
+                        viewModel.keepCurrentPhoto()
+                    }
                 }
             }
     }
+
 }
 
 struct PhotoAssetView: View {
