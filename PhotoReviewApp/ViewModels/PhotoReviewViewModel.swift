@@ -69,7 +69,6 @@ class PhotoReviewViewModel: ObservableObject {
         
         // Move to the next photo immediately
         if currentIndex + 1 < dailyPhotos.count {
-            let nextIndex = currentIndex + 1 < dailyPhotos.count ? currentIndex + 1 : max(0, dailyPhotos.count - 1)
             
             // Proceed to delete the photo asynchronously
             photoLibraryManager.deletePhoto(asset) { [weak self] success in
@@ -81,13 +80,13 @@ class PhotoReviewViewModel: ObservableObject {
                         self.dailyPhotos.remove(at: self.currentIndex)
                         
                         // If no photos are left, generate new ones and reset currentIndex to 0
-                        if self.dailyPhotos.isEmpty {
-                            print("No photos left, generating new photos...")
+                        if self.dailyPhotos.isEmpty || !(self.currentIndex + 1 < self.dailyPhotos.count) {
+                            print("AFTER DELETE - No photos left, generating new photos...")
                             self.generateNewPhotos()
                             self.currentIndex = 0  // Reset to the first photo
                         } else {
                             // Otherwise, update currentIndex to the next valid photo
-                            self.currentIndex = nextIndex
+                            self.currentIndex += 1
                         }
                     } else {
                         self.errorMessage = "Failed to delete photo."
@@ -98,7 +97,7 @@ class PhotoReviewViewModel: ObservableObject {
             
         } else {
             // If no photos left, generate new ones and reset currentIndex to 0
-            print("No photos left, generating new photos...")
+            print("BEFORE DELETE - No photos left, generating new photos...")
             self.generateNewPhotos()
             self.currentIndex = 0  // Reset to the first photo
         }
@@ -116,7 +115,7 @@ class PhotoReviewViewModel: ObservableObject {
             self.currentIndex += 1
         } else {
             // If no photos left, generate new ones and reset currentIndex to 0
-            print("No photos left, generating new photos...")
+            print("AFTER KEEP - No photos left, generating new photos...")
             self.generateNewPhotos()
             self.currentIndex = 0  // Reset to the first photo
         }
