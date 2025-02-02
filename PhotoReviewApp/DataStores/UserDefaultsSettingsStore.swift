@@ -9,11 +9,22 @@ import SwiftUI
 import Foundation
 
 class UserDefaultsSettingsStore: UserSettingsStoreProtocol {
-    private let hourKey = "reviewHour"
-    private let minuteKey = "reviewMinute"
+    private enum Keys {
+        static let notificationTime = "notificationTime"
+        static let repeatInterval = "repeatInterval"
+        static let selectedDays = "selectedDays"
+        static let isNotificationsEnabled = "isNotificationsEnabled"
+        static let selectedWeeklyDays = "selectedWeeklyDays"
+        static let selectedMonthlyDays = "selectedMonthlyDays"
+    }
     
-    var reviewHour: Int = 8   // default
-    var reviewMinute: Int = 0 // default
+    var notificationTime: Date = Date()
+    var repeatInterval: RepeatInterval = .daily
+    var selectedDays: [Weekday] = []
+    var isNotificationsEnabled: Bool = false
+    
+    var selectedWeeklyDays: [Weekday] = []
+    var selectedMonthlyDays: [Int] = []
     
     init() {
         loadSettings()
@@ -21,19 +32,23 @@ class UserDefaultsSettingsStore: UserSettingsStoreProtocol {
     
     func loadSettings() {
         let defaults = UserDefaults.standard
-        let storedHour = defaults.integer(forKey: hourKey)
-        // Check if storedHour is non-zero or else fallback to the default
-        reviewHour = (storedHour == 0) ? 8 : storedHour
+        notificationTime = defaults.object(forKey: Keys.notificationTime) as? Date ?? Date()
+        repeatInterval = RepeatInterval(rawValue: defaults.string(forKey: Keys.repeatInterval) ?? "") ?? .daily
+        selectedDays = (defaults.array(forKey: Keys.selectedDays) as? [Int])?.compactMap { Weekday(rawValue: $0) } ?? []
+        isNotificationsEnabled = defaults.bool(forKey: Keys.isNotificationsEnabled)
         
-        let storedMinute = defaults.integer(forKey: minuteKey)
-        // Similarly, you could do a check for minute if 0 is not your intended default
-        reviewMinute = storedMinute
+        selectedWeeklyDays = (defaults.array(forKey: Keys.selectedWeeklyDays) as? [Int])?
+            .compactMap { Weekday(rawValue: $0) } ?? []
+        selectedMonthlyDays = defaults.array(forKey: Keys.selectedMonthlyDays) as? [Int] ?? []
     }
     
     func saveSettings() {
         let defaults = UserDefaults.standard
-        defaults.set(reviewHour, forKey: hourKey)
-        defaults.set(reviewMinute, forKey: minuteKey)
+        defaults.set(notificationTime, forKey: Keys.notificationTime)
+        defaults.set(repeatInterval.rawValue, forKey: Keys.repeatInterval)
+        defaults.set(selectedDays.map { $0.rawValue }, forKey: Keys.selectedDays)
+        defaults.set(isNotificationsEnabled, forKey: Keys.isNotificationsEnabled)
+        defaults.set(selectedWeeklyDays.map { $0.rawValue }, forKey: Keys.selectedWeeklyDays)
+        defaults.set(selectedMonthlyDays, forKey: Keys.selectedMonthlyDays)
     }
 }
-

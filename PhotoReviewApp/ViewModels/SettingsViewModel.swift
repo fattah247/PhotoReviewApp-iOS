@@ -9,8 +9,13 @@
 import SwiftUI
 
 class SettingsViewModel: ObservableObject {
-    @Published var reviewHour: Int
-    @Published var reviewMinute: Int
+    @Published var notificationTime: Date
+    @Published var repeatInterval: RepeatInterval
+    @Published var selectedDays: [Weekday]
+    @Published var isNotificationsEnabled: Bool
+    
+    @Published var selectedWeeklyDays: [Weekday] = []
+    @Published var selectedMonthlyDays: [Int] = []
     
     private var userSettingsStore: UserSettingsStoreProtocol
     private var notificationManager: NotificationManager
@@ -20,19 +25,37 @@ class SettingsViewModel: ObservableObject {
         self.userSettingsStore = userSettingsStore
         self.notificationManager = notificationManager
         
-        self.reviewHour = userSettingsStore.reviewHour
-        self.reviewMinute = userSettingsStore.reviewMinute
+        self.notificationTime = userSettingsStore.notificationTime
+        self.repeatInterval = userSettingsStore.repeatInterval
+        self.selectedDays = userSettingsStore.selectedDays
+        self.isNotificationsEnabled = userSettingsStore.isNotificationsEnabled
+        
+        self.selectedWeeklyDays = userSettingsStore.selectedWeeklyDays
+        self.selectedMonthlyDays = userSettingsStore.selectedMonthlyDays
     }
     
     func requestNotificationPermission() {
         notificationManager.requestNotificationPermissions()
     }
     
-    func scheduleNotification() {
-        userSettingsStore.reviewHour = reviewHour
-        userSettingsStore.reviewMinute = reviewMinute
+    func saveSettings() {
+        userSettingsStore.notificationTime = notificationTime
+        userSettingsStore.repeatInterval = repeatInterval
+        userSettingsStore.selectedDays = selectedDays
+        userSettingsStore.isNotificationsEnabled = isNotificationsEnabled
         userSettingsStore.saveSettings()
+        userSettingsStore.selectedWeeklyDays = selectedWeeklyDays
+        userSettingsStore.selectedMonthlyDays = selectedMonthlyDays
         
-        notificationManager.scheduleDailyNotification(hour: reviewHour, minute: reviewMinute)
+        if isNotificationsEnabled {
+            notificationManager.scheduleNotifications(
+                time: notificationTime,
+                repeatInterval: repeatInterval,
+                days: selectedDays
+            )
+        } else {
+            notificationManager.cancelAllNotifications()
+        }
     }
 }
+

@@ -22,22 +22,56 @@ class NotificationManager: ObservableObject {
         }
     }
     
-    func scheduleDailyNotification(hour: Int, minute: Int) {
-        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["DailyPhotoReviewNotification"])
+    func scheduleNotifications(time: Date, repeatInterval: RepeatInterval, days: [Weekday]) {
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
         
+        let calendar = Calendar.current
+        let components = calendar.dateComponents([.hour, .minute], from: time)
+        
+        switch repeatInterval {
+        case .daily:
+            scheduleDailyNotification(hour: components.hour!, minute: components.minute!)
+            
+        case .weekly:
+            for day in days {
+                var dateComponents = DateComponents()
+                dateComponents.hour = components.hour
+                dateComponents.minute = components.minute
+                dateComponents.weekday = day.rawValue
+                scheduleNotification(components: dateComponents, repeats: true)
+            }
+            
+        case .monthly:
+            let day = calendar.component(.day, from: time)
+            var dateComponents = DateComponents()
+            dateComponents.hour = components.hour
+            dateComponents.minute = components.minute
+            dateComponents.day = day
+            scheduleNotification(components: dateComponents, repeats: true)
+        }
+    }
+    
+    func cancelAllNotifications() {
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+    }
+    
+    private func scheduleDailyNotification(hour: Int, minute: Int) {
         var dateComponents = DateComponents()
         dateComponents.hour = hour
         dateComponents.minute = minute
-        
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+        scheduleNotification(components: dateComponents, repeats: true)
+    }
+    
+    private func scheduleNotification(components: DateComponents, repeats: Bool) {
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: repeats)
         
         let content = UNMutableNotificationContent()
-        content.title = "Daily Photo Review"
-        content.body = "It's time to review your daily photos!"
+        content.title = "Photo Review Time"
+        content.body = "It's time to review your photos!"
         content.sound = .default
         
         let request = UNNotificationRequest(
-            identifier: "DailyPhotoReviewNotification",
+            identifier: UUID().uuidString,
             content: content,
             trigger: trigger
         )
