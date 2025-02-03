@@ -14,11 +14,24 @@ struct PhotoReviewView: View {
     @State private var feedbackDirection: SwipeDirection?
     @State private var showSuccessOverlay = false
     @State private var overlayMessage = ""
+    @State private var originalPhotoCount = 0
     
-    // Haptic feedback generator
     private let impactMed = UIImpactFeedbackGenerator(style: .medium)
     private let impactHeavy = UIImpactFeedbackGenerator(style: .heavy)
+
+    // Computed properties for feedback
+    private var feedbackColor: Color {
+        switch feedbackDirection {
+        case .left: return .red.opacity(0.4)
+        case .right: return .green.opacity(0.4)
+        default: return .clear
+        }
+    }
     
+    private var rotationAmount: Double {
+        Double(dragOffset.width / 30)
+    }
+
     var body: some View {
         ZStack {
             Color(.systemGroupedBackground).ignoresSafeArea()
@@ -34,13 +47,17 @@ struct PhotoReviewView: View {
                     .transition(.opacity)
             }
         }
+        .onAppear {
+//            originalPhotoCount = viewModel.dailyPhotos.count
+        }
         .onChange(of: viewModel.dailyPhotos) {
             if viewModel.dailyPhotos.isEmpty {
                 viewModel.generateNewPhotos()
+                originalPhotoCount = viewModel.dailyPhotos.count
             }
         }
     }
-    
+
     private var mainContentView: some View {
         VStack(spacing: 20) {
             photoView
@@ -49,7 +66,7 @@ struct PhotoReviewView: View {
         }
         .padding()
     }
-    
+
     private var photoView: some View {
         ZStack {
             if viewModel.currentIndex < viewModel.dailyPhotos.count {
@@ -72,7 +89,7 @@ struct PhotoReviewView: View {
         }
         .frame(height: 400)
     }
-    
+
     private var actionIndicator: some View {
         Group {
             if let direction = feedbackDirection {
@@ -86,32 +103,26 @@ struct PhotoReviewView: View {
             }
         }
     }
-    
-    private var rotationAmount: Double {
-        Double(dragOffset.width / 30)
-    }
-    
-    private var feedbackColor: Color {
-        switch feedbackDirection {
-        case .left: return .red.opacity(0.4)
-        case .right: return .green.opacity(0.4)
-        default: return .clear
-        }
-    }
-    
+
     private var photoCounter: some View {
-        Text("Photo \(viewModel.currentIndex + 1) of \(viewModel.dailyPhotos.count)")
-            .font(.subheadline.weight(.medium))
-            .foregroundColor(.secondary)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
-            .background(
-                Capsule()
-                    .fill(Color(.systemBackground))
-                    .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
-            )
+        VStack(spacing: 4) {
+            Text("\(viewModel.currentIndex + 1) of \(10)")
+                .font(.system(size: 16, weight: .semibold))
+                .monospacedDigit()
+            
+//            Text("Remaining: \(viewModel.dailyPhotos.count)")
+//                .font(.caption)
+//                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 16)
+        .background(
+            Capsule()
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+        )
     }
-    
+
     private var actionButtons: some View {
         HStack(spacing: 30) {
             actionButton(
@@ -127,7 +138,7 @@ struct PhotoReviewView: View {
             )
         }
     }
-    
+
     private func actionButton(icon: String, color: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
@@ -144,7 +155,7 @@ struct PhotoReviewView: View {
         }
         .buttonStyle(PressEffectButtonStyle())
     }
-    
+
     private var emptyStateView: some View {
         VStack(spacing: 20) {
             Image(systemName: "photo.on.rectangle")
@@ -169,7 +180,7 @@ struct PhotoReviewView: View {
         }
         .padding()
     }
-    
+
     private var dragGesture: some Gesture {
         DragGesture()
             .updating($dragOffset) { value, state, _ in
@@ -180,7 +191,7 @@ struct PhotoReviewView: View {
                 handleDragEnd(value.translation.width)
             }
     }
-    
+
     private func updateFeedback(for width: CGFloat) {
         if width < -50 {
             if feedbackDirection != .left {
@@ -196,7 +207,7 @@ struct PhotoReviewView: View {
             feedbackDirection = nil
         }
     }
-    
+
     private func handleDragEnd(_ width: CGFloat) {
         if width < -120 {
             handleAction(.left)
@@ -208,9 +219,12 @@ struct PhotoReviewView: View {
             }
         }
     }
-    
+
     private func handleAction(_ direction: SwipeDirection) {
         impactHeavy.impactOccurred()
+        
+        let currentIndex = viewModel.currentIndex
+        let totalCount = originalPhotoCount
         
         withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
             feedbackDirection = direction
@@ -219,14 +233,25 @@ struct PhotoReviewView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             showSuccessOverlay(message: direction == .left ? "Deleted" : "Kept")
             if direction == .left {
-                Task { await viewModel.deleteCurrentPhoto() }
+                Task {
+                    await viewModel.deleteCurrentPhoto()
+                    if viewModel.dailyPhotos.isEmpty {
+                        originalPhotoCount = viewModel.dailyPhotos.count
+                    }
+                }
             } else {
                 viewModel.keepCurrentPhoto()
             }
             feedbackDirection = nil
+            
+            withAnimation(.easeInOut) {
+                if viewModel.currentIndex < originalPhotoCount {
+                    viewModel.currentIndex = min(currentIndex + 1, originalPhotoCount - 1)
+                }
+            }
         }
     }
-    
+
     private func showSuccessOverlay(message: String) {
         overlayMessage = message
         withAnimation {
@@ -280,15 +305,24 @@ struct SuccessOverlay: View {
 struct PhotoAssetView: View {
     let asset: PHAsset
     @State private var image: UIImage? = nil
-    @State private var isLoading = false
+    @State private var creationDate: Date? = nil
     
     var body: some View {
-        ZStack {
+        ZStack(alignment: .bottomLeading) {
             if let image = image {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
                     .transition(.opacity.combined(with: .scale(0.95)))
+                
+                if let creationDate = creationDate {
+                    Text(creationDate.formatted(date: .abbreviated, time: .shortened))
+                        .font(.system(size: 12, weight: .medium))
+                        .padding(6)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(8)
+                        .padding(8)
+                }
             } else {
                 ProgressView()
                     .scaleEffect(1.5)
@@ -304,29 +338,31 @@ struct PhotoAssetView: View {
         }
         .task {
             await loadImage()
+            creationDate = asset.creationDate
         }
     }
-    
+
     private func loadImage() async {
-        isLoading = true
         let imageManager = PHImageManager.default()
         let options = PHImageRequestOptions()
         options.isNetworkAccessAllowed = true
         options.deliveryMode = .highQualityFormat
         
-        imageManager.requestImage(
-            for: asset,
-            targetSize: CGSize(width: 800, height: 800),
-            contentMode: .aspectFill,
-            options: options
-        ) { result, _ in
-            if let result = result {
-                DispatchQueue.main.async {
-                    withAnimation(.easeInOut) {
-                        image = result
+        return await withCheckedContinuation { continuation in
+            imageManager.requestImage(
+                for: asset,
+                targetSize: CGSize(width: 800, height: 800),
+                contentMode: .aspectFill,
+                options: options
+            ) { result, _ in
+                if let result = result {
+                    DispatchQueue.main.async {
+                        withAnimation(.easeInOut) {
+                            image = result
+                        }
                     }
-                    isLoading = false
                 }
+                continuation.resume()
             }
         }
     }
