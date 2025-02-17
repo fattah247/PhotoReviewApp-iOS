@@ -1,0 +1,79 @@
+//
+//  AnalyticsStore.swift
+//  PhotoReviewApp
+//
+//  Created by Muhammad Abdul Fattah on 03/02/25.
+//
+import Foundation
+import CoreData
+
+protocol AnalyticsServiceProtocol {
+    var totalStorageSaved: Int64 { get }
+    var currentStreak: Int { get }
+    var totalReviewed: Int64 { get }
+    var totalDeleted: Int64 { get }
+    var totalBookmarked: Int64 { get }
+    
+    func trackDeletion(fileSize: Int64)
+    func trackBookmark()
+    func trackReview()
+    func resetStreak()
+}
+
+final class CoreDataAnalyticsService: ObservableObject, AnalyticsServiceProtocol {
+    private let context: NSManagedObjectContext
+    private var analyticsEntity: AnalyticsEntity?
+    
+    init(context: NSManagedObjectContext) {
+        self.context = context
+        loadAnalytics()
+    }
+    
+    private func loadAnalytics() {
+        let request = AnalyticsEntity.fetchRequest() as! NSFetchRequest<AnalyticsEntity>
+        do {
+            analyticsEntity = try context.fetch(request).first ?? AnalyticsEntity(context: context)
+            try context.save()
+        } catch {
+            AppLogger.general.error("Error loading analytics: \(error, privacy: .public)")
+            
+        }
+    }
+    
+    var totalStorageSaved: Int64 { analyticsEntity?.totalStorageSaved ?? 0 }
+    var currentStreak: Int { Int(analyticsEntity?.currentStreak ?? 0) }
+    var totalReviewed: Int64 { analyticsEntity?.totalReviewed ?? 0 }
+    var totalDeleted: Int64 { analyticsEntity?.totalDeleted ?? 0 }
+    var totalBookmarked: Int64 { analyticsEntity?.totalBookmarked ?? 0 }
+    
+    func trackDeletion(fileSize: Int64) {
+        analyticsEntity?.totalStorageSaved += fileSize
+        analyticsEntity?.totalDeleted += 1
+        saveContext()
+    }
+    
+    func trackBookmark() {
+        analyticsEntity?.totalBookmarked += 1
+        saveContext()
+    }
+    
+    func trackReview() {
+        analyticsEntity?.totalReviewed += 1
+        analyticsEntity?.currentStreak += 1
+        saveContext()
+    }
+    
+    func resetStreak() {
+        analyticsEntity?.currentStreak = 0
+        saveContext()
+    }
+    
+    private func saveContext() {
+        do {
+            try context.save()
+        } catch {
+            AppLogger.general.error("Error saving analytics: \(error, privacy: .public)")
+
+        }
+    }
+}
