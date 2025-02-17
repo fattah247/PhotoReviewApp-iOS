@@ -19,52 +19,49 @@ struct PhotoCardView: View {
        @State private var swipeIndicatorOffset: CGFloat = 0
        private let maxSwipeIndicatorOffset: CGFloat = 60
 
-       var body: some View {
-           GeometryReader { geometry in
-               ZStack(alignment: .bottom) {
-                   // Main Photo Content
-                   imageContent
-                       .overlay(swipeFeedbackOverlay)
-                   
-                   // Metadata Overlay
-                   metadataOverlay
-               }
-               .background(
-                   RoundedRectangle(cornerRadius: 20)
-                       .fill(.background)
-                       .shadow(color: .black.opacity(0.2), radius: 20, x: 0, y: 5)
-               )
-               .offset(dragOffset)
-               .rotationEffect(.degrees(Double(dragOffset.width / 30)))
-               .scaleEffect(1 - abs(dragOffset.width) / 1000)
-               .gesture(dragGesture(geometry: geometry))
-               .animation(.interactiveSpring(), value: dragOffset)
-           }
-           .frame(width: 300, height: 500)
-           .padding(.vertical, 20)
-       }
+    var body: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .bottom) {
+                imageContent(for: geometry.size)
+                    .overlay(swipeFeedbackOverlay)
+                
+                metadataOverlay
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: Color.black.opacity(0.2), radius: 20, x: 0, y: 5)
+            )
+            .offset(dragOffset)
+            .rotationEffect(.degrees(Double(dragOffset.width / 30)))
+            .scaleEffect(1 - abs(dragOffset.width) / 1000)
+            .gesture(dragGesture(geometry: geometry))
+            .animation(.interactiveSpring(), value: dragOffset)
+        }
+        .padding(.vertical, 20)
+    }
     
     
-      private var imageContent: some View {
-          ZStack {
-              if let image = photo.image {
-                  Image(uiImage: image)
-                      .resizable()
-                      .scaledToFill()
-              } else {
-                  Color.secondary
-                  Image(systemName: "photo")
-                      .font(.largeTitle)
-                      .foregroundColor(.white)
-              }
-          }
-          .frame(width: 300, height: 500)
-          .clipShape(RoundedRectangle(cornerRadius: 20))
-          .overlay(
-              RoundedRectangle(cornerRadius: 20)
-                  .stroke(.white.opacity(0.2), lineWidth: 1)
-          )
-      }
+    private func imageContent(for size: CGSize) -> some View {
+        ZStack {
+            if let image = photo.image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Color.secondary
+                Image(systemName: "photo")
+                    .font(.largeTitle)
+                    .foregroundColor(.white)
+            }
+        }
+        .frame(width: size.width, height: size.height)
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+        )
+    }
       
       private var swipeFeedbackOverlay: some View {
           ZStack {

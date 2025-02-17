@@ -27,45 +27,55 @@ struct ReviewView: View {
     
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground).ignoresSafeArea()
+            Color(.systemGroupedBackground)
+                .ignoresSafeArea()
             
-            Group {
-                switch viewModel.state {
-                case .idle:
-                    loadingPlaceholder
-                case .loading:
-                    loadingView
-                case .loaded(let photos):
-                    contentView(photos: photos)
-                case .error(let error):
-                    errorView(error: error)
-                }
-            }
-            .transition(.opacity.combined(with: .scale(0.9)))
-            
-            settingsButton
+            contentSwitch
+                .transition(.opacity.combined(with: .scale(0.9)))
         }
-        .overlay(settingsButton)
         .sheet(isPresented: $viewModel.showSettings) {
             SettingsView()
                 .environmentObject(viewModel)
         }
         .task { await viewModel.loadInitialPhotos() }
     }
+
     
-    private func contentView(photos: [Photo]) -> some View {
-        ZStack {
-            ForEach(photos) { photo in
-                PhotoCardView(photo: photo, viewModel: viewModel)
-                    .matchedGeometryEffect(id: photo.id, in: cardNamespace)
-                    .transition(.asymmetric(
-                        insertion: .offset(y: 50).combined(with: .opacity),
-                        removal: .scale(scale: 0.8).combined(with: .opacity))
-                    )
-                    .zIndex(Double(photos.count - photos.firstIndex(of: photo)!))
-            }
+    @ViewBuilder
+    private var contentSwitch: some View {
+        switch viewModel.state {
+        case .idle:
+            loadingPlaceholder
+        case .loading:
+            loadingView
+        case .loaded(let photos):
+            contentView(photos: photos)
+        case .error(let error):
+            errorView(error: error)
         }
     }
+    
+    private func contentView(photos: [Photo]) -> some View {
+        GeometryReader { geometry in
+            ZStack {
+                ForEach(photos) { photo in
+                    PhotoCardView(photo: photo, viewModel: viewModel)
+                        // Each card takes up 90% of the available width/height:
+                        .frame(width: geometry.size.width * 0.9,
+                               height: geometry.size.height * 0.9)
+                        .matchedGeometryEffect(id: photo.id, in: cardNamespace)
+                        .transition(.asymmetric(
+                            insertion: .offset(y: 50).combined(with: .opacity),
+                            removal: .scale(scale: 0.8).combined(with: .opacity)
+                        ))
+                        // Ensure the top card is interactable:
+                        .zIndex(Double(photos.count - (photos.firstIndex(of: photo) ?? 0)))
+                }
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+        }
+    }
+
     
     private var loadingView: some View {
         VStack(spacing: 20) {
