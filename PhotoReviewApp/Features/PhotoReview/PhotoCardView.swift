@@ -117,28 +117,6 @@ struct PhotoCardView: View {
                 }
             }
     }
-
-//    private var metadataOverlay: some View {
-//        VStack(alignment: .leading) {
-//            HStack {
-//                Image(systemName: "calendar")
-//                Text(photo.creationDate?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown Date")
-//            }
-//            
-//            Spacer()
-//            
-//            HStack {
-//                Image(systemName: "photo")
-//                Text(photo.fileSize.formatted(.byteCount(style: .file)))
-//            }
-//        }
-//        .font(.caption.weight(.medium))
-//        .foregroundColor(.white)
-//        .padding()
-//        .background(.ultraThinMaterial)
-//        .cornerRadius(12)
-//        .padding()
-//    }
     
     private var metadataOverlay: some View {
         HStack {
@@ -169,29 +147,8 @@ struct PhotoCardView: View {
         .padding([.horizontal, .bottom], 16)
     }
 
-    
-//    private var metadataOverlay: some View {
-//        VStack(alignment: .leading, spacing: 4) { // add spacing between elements if desired
-//            HStack {
-//                Image(systemName: "calendar")
-//                Text(photo.creationDate?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown Date")
-//            }
-//            
-//            HStack {
-//                Image(systemName: "photo")
-//                Text(photo.fileSize.formatted(.byteCount(style: .file)))
-//            }
-//        }
-//        .font(.caption.weight(.medium))
-//        .foregroundColor(.white)
-//        .padding(8) // reduced padding
-//        .background(.ultraThinMaterial)
-//        .cornerRadius(8)
-//        .padding([.leading, .bottom], 12) // position at bottom left
-//    }
-
     private func handleDragProgress(_ translationWidth: CGFloat) {
-        let progress = abs(translationWidth) / UIScreen.main.bounds.width
+        _ = abs(translationWidth) / UIScreen.main.bounds.width
         haptic.prepare()
     }
     

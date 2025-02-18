@@ -94,7 +94,7 @@ final class ReviewViewModel: ObservableObject {
             print("Photo Deleted")
         case .right:
             analytics.trackBookmark()
-            print("Photo Deleted")
+            print("Photo Bookmarked")
         }
 
         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {

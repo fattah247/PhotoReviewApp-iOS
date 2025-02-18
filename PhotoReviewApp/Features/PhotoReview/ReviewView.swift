@@ -60,15 +60,12 @@ struct ReviewView: View {
             ZStack {
                 ForEach(photos) { photo in
                     PhotoCardView(photo: photo, viewModel: viewModel)
-                        // Each card takes up 90% of the available width/height:
-                        .frame(width: geometry.size.width * 0.9,
-                               height: geometry.size.height * 0.9)
+                        .frame(width: geometry.size.width * 0.9, height: geometry.size.height * 0.9)
                         .matchedGeometryEffect(id: photo.id, in: cardNamespace)
                         .transition(.asymmetric(
                             insertion: .offset(y: 50).combined(with: .opacity),
                             removal: .scale(scale: 0.8).combined(with: .opacity)
                         ))
-                        // Ensure the top card is interactable:
                         .zIndex(Double(photos.count - (photos.firstIndex(of: photo) ?? 0)))
                 }
             }
