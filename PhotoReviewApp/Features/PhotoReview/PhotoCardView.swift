@@ -16,8 +16,8 @@ struct PhotoCardView: View {
     @EnvironmentObject var haptic: HapticService
     
     @State private var overlayOpacity: Double = 0
-       @State private var swipeIndicatorOffset: CGFloat = 0
-       private let maxSwipeIndicatorOffset: CGFloat = 60
+    @State private var swipeIndicatorOffset: CGFloat = 0
+    private let maxSwipeIndicatorOffset: CGFloat = 60
 
     var body: some View {
         GeometryReader { geometry in
@@ -29,8 +29,8 @@ struct PhotoCardView: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color(.systemBackground))
-                    .shadow(color: Color.black.opacity(0.2), radius: 20, x: 0, y: 5)
+                    .fill(Color(.systemBackground))  // Ensures background adapts to both light and dark mode
+                    .shadow(color: shadowColor, radius: 20, x: 0, y: 5) // Dynamic shadow based on color scheme
             )
             .offset(dragOffset)
             .rotationEffect(.degrees(Double(dragOffset.width / 30)))
@@ -41,13 +41,13 @@ struct PhotoCardView: View {
         .padding(.vertical, 20)
     }
     
-    
     private func imageContent(for size: CGSize) -> some View {
         ZStack {
             if let image = photo.image {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
             } else {
                 Color.secondary
                 Image(systemName: "photo")
@@ -62,43 +62,43 @@ struct PhotoCardView: View {
                 .stroke(Color.white.opacity(0.2), lineWidth: 1)
         )
     }
-      
-      private var swipeFeedbackOverlay: some View {
-          ZStack {
-              if dragOffset.width > 0 {
-                  Color.green.opacity(0.3)
-              } else if dragOffset.width < 0 {
-                  Color.red.opacity(0.3)
-              }
-          }
-          .clipShape(RoundedRectangle(cornerRadius: 20))
-          .overlay(swipeIndicator)
-          .opacity(overlayOpacity)
-      }
-      
-      private var swipeIndicator: some View {
-          HStack {
-              if dragOffset.width < -50 {
-                  Image(systemName: "trash")
-                      .font(.title)
-                      .foregroundColor(.red)
-                      .offset(x: swipeIndicatorOffset)
-                      .transition(.scale)
-              }
-              
-              Spacer()
-              
-              if dragOffset.width > 50 {
-                  Image(systemName: "bookmark.fill")
-                      .font(.title)
-                      .foregroundColor(.green)
-                      .offset(x: -swipeIndicatorOffset)
-                      .transition(.scale)
-              }
-          }
-          .padding(30)
-      }
-      
+    
+    private var swipeFeedbackOverlay: some View {
+        ZStack {
+            if dragOffset.width > 0 {
+                Color.green.opacity(0.3)
+            } else if dragOffset.width < 0 {
+                Color.red.opacity(0.3)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 20))
+        .overlay(swipeIndicator)
+        .opacity(overlayOpacity)
+    }
+    
+    private var swipeIndicator: some View {
+        HStack {
+            if dragOffset.width < -50 {
+                Image(systemName: "trash")
+                    .font(.title)
+                    .foregroundColor(.red)
+                    .offset(x: swipeIndicatorOffset)
+                    .transition(.scale)
+            }
+            
+            Spacer()
+            
+            if dragOffset.width > 50 {
+                Image(systemName: "bookmark.fill")
+                    .font(.title)
+                    .foregroundColor(.green)
+                    .offset(x: -swipeIndicatorOffset)
+                    .transition(.scale)
+            }
+        }
+        .padding(30)
+    }
+    
     private func dragGesture(geometry: GeometryProxy) -> some Gesture {
         DragGesture()
             .updating($dragOffset) { value, state, _ in
@@ -117,7 +117,7 @@ struct PhotoCardView: View {
                 }
             }
     }
-    
+
     private var metadataOverlay: some View {
         HStack {
             VStack(alignment: .leading, spacing: 6) {
@@ -160,4 +160,14 @@ struct PhotoCardView: View {
             viewModel.handleSwipe(direction, for: photo)
         }
     }
+    
+    // Dynamic shadow color for light and dark modes
+    private var shadowColor: Color {
+        if UITraitCollection.current.userInterfaceStyle == .dark {
+            return Color.black.opacity(0.6) // Darker shadow for Dark Mode
+        } else {
+            return Color.black.opacity(0.2) // Softer shadow for Light Mode
+        }
+    }
 }
+

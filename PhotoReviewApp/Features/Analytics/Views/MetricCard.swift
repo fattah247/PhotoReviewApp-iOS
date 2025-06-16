@@ -7,15 +7,14 @@
 // Create MetricCard.swift
 import SwiftUI
 
-// MetricComponents.swift
 struct MetricCard: View {
     let title: String
     let icon: String
     let value: String
     let gradient: LinearGradient
-    
+
     var body: some View {
-        HStack(alignment: .top){
+        HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 8) {
                 Text(title)
                     .font(.subheadline)
@@ -31,7 +30,7 @@ struct MetricCard: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.regularMaterial)
             .cornerRadius(12)
-            
+
             Spacer()
 
             Image(systemName: icon)
@@ -49,11 +48,9 @@ struct MetricCard: View {
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(gradient)
-                .shadow(color: Color.black.opacity(0.3), radius: 12, x: 0, y: 4) // Apply opacity to black color for shadow
+                .shadow(color: Color.black.opacity(0.3), radius: 12, x: 0, y: 4)
         )
         .padding(.horizontal)
-        
-
     }
 }
 

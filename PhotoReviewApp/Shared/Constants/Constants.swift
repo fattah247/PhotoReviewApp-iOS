@@ -14,6 +14,8 @@ enum Constants {
         static let photoLimit = "photoLimit"
         static let sortOption = "sortOption"
         static let showDeletionConfirmation = "showDeletionConfirmation"
+        static let selectedWeeklyDays = "selectedWeeklyDays"
+        static let selectedMonthlyDay = "selectedMonthlyDay"
     }
     
     enum Notifications {

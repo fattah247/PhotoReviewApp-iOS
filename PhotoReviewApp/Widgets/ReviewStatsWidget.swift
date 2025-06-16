@@ -31,38 +31,44 @@ struct StatsWidgetView: View {
     var entry: StatsEntry
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Image(systemName: "flame")
+                Image(systemName: "flame.fill")
                     .symbolRenderingMode(.multicolor)
                 Text("Streak")
                     .font(.caption)
+                    .foregroundColor(.secondary)
                 Spacer()
                 Text("\(entry.streak)")
-                    .font(.title3.weight(.bold))
+                    .font(.title2.weight(.bold))
+                    .foregroundColor(.primary)
             }
             
             Divider()
             
             HStack {
-                Image(systemName: "opticaldisc")
+                Image(systemName: "opticaldisc.fill")
                     .symbolRenderingMode(.multicolor)
                 Text("Saved")
                     .font(.caption)
+                    .foregroundColor(.secondary)
                 Spacer()
                 Text(entry.saved.formatted(.byteCount(style: .file)))
-                    .font(.title3.weight(.bold))
+                    .font(.title2.weight(.bold))
+                    .foregroundColor(.primary)
             }
             
             Spacer()
             
-            HStack {
-                Spacer()
-                Image(systemName: "photo.on.rectangle.angled")
-                    .font(.caption)
-                Text("PhotoReview")
-                    .font(.caption2)
-            }
+//            HStack {
+//                Spacer()
+//                Image(systemName: "photo.on.rectangle.angled")
+//                    .symbolRenderingMode(.multicolor)
+//                    .frame(width: 24, height: 24)
+//                Text("PhotoReview")
+//                    .font(.caption2)
+//                    .foregroundColor(.secondary)
+//            }
         }
         .padding()
     }
@@ -92,6 +98,7 @@ struct StatsEntry: TimelineEntry {
     let streak: Int
     let saved: Int64
 }
+
 
 //struct StatsTimelineProvider: TimelineProvider {
 //    typealias Entry = StatsEntry

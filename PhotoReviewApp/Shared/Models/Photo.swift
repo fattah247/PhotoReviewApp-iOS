@@ -33,6 +33,23 @@ enum PhotoSortOption: String, CaseIterable {
     }
 }
 
-enum Weekday: Int, CaseIterable {
+enum Weekday: Int, CaseIterable, Identifiable {
     case sun = 1, mon, tue, wed, thu, fri, sat
+    
+    var id: Int { rawValue }
+}
+
+// For nicer display
+extension Weekday {
+    var shortName: String {
+        switch self {
+        case .sun: return "Sun"
+        case .mon: return "Mon"
+        case .tue: return "Tue"
+        case .wed: return "Wed"
+        case .thu: return "Thu"
+        case .fri: return "Fri"
+        case .sat: return "Sat"
+        }
+    }
 }

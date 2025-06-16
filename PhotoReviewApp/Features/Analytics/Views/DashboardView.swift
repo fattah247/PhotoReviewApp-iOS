@@ -60,9 +60,8 @@ struct DashboardView: View {
             )
         )
         .scaleEffect(animateElements ? 1 : 0.8)
-        .animation(.spring().delay(0.1), value: animateElements) // Correct usage of delay
+        .animation(.spring().delay(0.1), value: animateElements)
     }
-
 
     private var statsGrid: some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 120))], spacing: 16) {

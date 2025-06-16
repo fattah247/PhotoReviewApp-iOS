@@ -16,6 +16,8 @@ protocol SettingsStoreProtocol {
     var photoLimit: Int { get set }
     var sortOption: PhotoSortOption { get set }
     var showDeletionConfirmation: Bool { get set }
+    var selectedWeeklyDays: [Weekday]  { get set }
+    var selectedMonthlyDay: Int { get set }
     func loadSettings()
     func saveSettings()
 }
@@ -29,9 +31,24 @@ final class SettingsViewModel: ObservableObject {
     @Published var sortOption: PhotoSortOption = .random
     @Published var showDeletionConfirmation = true
     
+    // Added properties to support weekly and monthly selections:
+    @Published var selectedWeeklyDays: [Weekday] = []
+    @Published var selectedMonthlyDay: Int = 1
+
     private var settingsStore: any SettingsStoreProtocol
     private let trashManager: any TrashManagerProtocol
     private let notificationService: any NotificationServiceProtocol
+    
+    var hasUnsavedChanges: Bool {
+        settingsStore.isNotificationsEnabled     != isNotificationsEnabled
+        || settingsStore.notificationTime         != notificationTime
+        || settingsStore.repeatInterval           != repeatInterval
+        || settingsStore.photoLimit               != photoLimit
+        || settingsStore.sortOption               != sortOption
+        || settingsStore.showDeletionConfirmation != showDeletionConfirmation
+        || settingsStore.selectedWeeklyDays       != selectedWeeklyDays
+        || settingsStore.selectedMonthlyDay       != selectedMonthlyDay
+    }
     
     init(settingsStore: any SettingsStoreProtocol,
          trashManager: any TrashManagerProtocol,
@@ -50,6 +67,9 @@ final class SettingsViewModel: ObservableObject {
         photoLimit = settingsStore.photoLimit
         sortOption = settingsStore.sortOption
         showDeletionConfirmation = settingsStore.showDeletionConfirmation
+        // Optionally load these if your store supports them:
+         selectedWeeklyDays = settingsStore.selectedWeeklyDays
+         selectedMonthlyDay = settingsStore.selectedMonthlyDay
     }
     
     func saveSettings() {
@@ -59,6 +79,9 @@ final class SettingsViewModel: ObservableObject {
         settingsStore.photoLimit = photoLimit
         settingsStore.sortOption = sortOption
         settingsStore.showDeletionConfirmation = showDeletionConfirmation
+        // Optionally save the new properties if needed:
+         settingsStore.selectedWeeklyDays = selectedWeeklyDays
+         settingsStore.selectedMonthlyDay = selectedMonthlyDay
         settingsStore.saveSettings()
         
         if isNotificationsEnabled {
@@ -75,3 +98,4 @@ final class SettingsViewModel: ObservableObject {
         trashManager.emptyTrash()
     }
 }
+

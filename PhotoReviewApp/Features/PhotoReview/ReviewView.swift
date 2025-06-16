@@ -39,7 +39,6 @@ struct ReviewView: View {
         }
         .task { await viewModel.loadInitialPhotos() }
     }
-
     
     @ViewBuilder
     private var contentSwitch: some View {
@@ -72,7 +71,6 @@ struct ReviewView: View {
             .frame(width: geometry.size.width, height: geometry.size.height)
         }
     }
-
     
     private var loadingView: some View {
         VStack(spacing: 20) {
