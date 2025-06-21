@@ -11,7 +11,7 @@ enum LocalizedStrings {
     static let cancel = tr("common.cancel", "Cancel")
     static let ok = tr("common.ok", "OK")
     static let retry = tr("common.retry", "Retry")
-    
+    static let delete = tr("common.delete", "Delete")
     // Notifications
     static let notificationTitle = tr("notifications.title", "Review Reminder")
     static let notificationBody = tr("notifications.body", "Time to review your photos!")
