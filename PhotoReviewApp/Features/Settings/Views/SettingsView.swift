@@ -21,7 +21,7 @@ struct SettingsView: View {
                         }
                         .padding(.vertical, 20)
                         .padding(.horizontal, 16)
-                        // 3. Add the overlay directly to the VStack
+                        // Add the overlay directly to the VStack
                         .overlay(
                             saveConfirmationOverlay
                                 .padding(.bottom, 24),

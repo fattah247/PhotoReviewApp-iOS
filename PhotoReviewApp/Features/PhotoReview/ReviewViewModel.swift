@@ -15,20 +15,31 @@ final class ReviewViewModel: ObservableObject {
     @Published var sortOption: PhotoSortOption = .random
     @Published var photoLimit = 10
     @Published var showSettings = false
+    @Published var showDeleteAlert = false
+    @Published var pendingDeletePhoto: Photo?
     
+    private let settings: SettingsViewModel
     private let photoService: any PhotoLibraryServiceProtocol
     private let haptic: any HapticServiceProtocol
     private let analytics: any AnalyticsServiceProtocol
+    private let bookmarkManager: any BookmarkManagerProtocol     
+    private let trashManager: any TrashManagerProtocol
     private var currentTask: Task<Void, Never>?
     
     init(
         photoService: any PhotoLibraryServiceProtocol,
         haptic: any HapticServiceProtocol,
-        analytics: any AnalyticsServiceProtocol
+        analytics: any AnalyticsServiceProtocol,
+        bookmarkManager: any BookmarkManagerProtocol,
+        trashManager: any TrashManagerProtocol,
+        settings: SettingsViewModel
     ) {
         self.photoService = photoService
         self.haptic = haptic
         self.analytics = analytics
+        self.settings = settings
+        self.bookmarkManager = bookmarkManager
+        self.trashManager = trashManager
     }
     
     func loadInitialPhotos() async {
@@ -70,7 +81,6 @@ final class ReviewViewModel: ObservableObject {
         }
     }
     
-    // ReviewViewModel.swift (Updated)
     private func processAsset(_ asset: PHAsset) async -> Photo? {
         guard let image = await photoService.loadImage(
             for: asset,
@@ -86,25 +96,45 @@ final class ReviewViewModel: ObservableObject {
     }
     
     func handleSwipe(_ direction: SwipeDirection, for photo: Photo) {
-        haptic.impact(direction == .left ? .heavy : .medium)
+      switch direction {
+      case .right:
+        bookmarkManager.toggleBookmark(assetIdentifier: photo.id)
+        haptic.notify(.success)
 
-        switch direction {
-        case .left:
-            analytics.trackDeletion(fileSize: photo.fileSize)
-            print("Photo Deleted")
-        case .right:
-            analytics.trackBookmark()
-            print("Photo Bookmarked")
+      case .left:
+        if settings.showDeletionConfirmation {
+          pendingDeletePhoto = photo
+          showDeleteAlert = true
+        } else {
+          trashManager.addToTrash(assetIdentifier: photo.id)
+          haptic.notify(.warning)
+          removePhoto(photo)
         }
+      }
 
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            state.removePhoto(photo)
-        }
+      // if you want instant UI removal even when confirmation is on:
+       withAnimation { state.removePhoto(photo) }
     }
-    
+
+
     private func cancelCurrentTask() {
         currentTask?.cancel()
         currentTask = nil
+    }
+    
+    private func removePhoto(_ photo: Photo) {
+      withAnimation(.spring()) {
+        state.removePhoto(photo)
+      }
+    }
+
+    func confirmDeletion(of photo: Photo?) {
+      guard let p = photo else { return }
+      trashManager.addToTrash(assetIdentifier: p.id)
+      haptic.notify(.warning)
+      pendingDeletePhoto = nil
+      showDeleteAlert = false
+      removePhoto(p)
     }
 }
 

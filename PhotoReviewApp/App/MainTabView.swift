@@ -18,29 +18,35 @@ struct MainTabView: View {
     @EnvironmentObject var bookmarkManager: CoreDataBookmarkManager
     @EnvironmentObject var trashManager: CoreDataTrashManager
 
+    @EnvironmentObject var settings: SettingsViewModel
+
     var body: some View {
         TabView(selection: $appState.activeTab) {
             ReviewView(
                 photoService: photoService,
                 haptic: hapticService,
-                analytics: analytics
+                analytics: analytics,
+                bookmarkManager: bookmarkManager,
+                trashManager: trashManager,
+                settings: settings
             )
-                .tabItem { Label("Review", systemImage: "photo") }
-                .tag(AppStateManager.AppTab.review)
+            .tabItem { Label("Review", systemImage: "photo") }
+            .tag(AppStateManager.AppTab.review)
             
             DashboardView()
                 .tabItem { Label("Stats", systemImage: "chart.bar") }
                 .tag(AppStateManager.AppTab.stats)
-            
+
             BookmarksView()
                 .tabItem { Label("Bookmarks", systemImage: "bookmark") }
                 .tag(AppStateManager.AppTab.bookmarks)
-            
+
             TrashView()
                 .tabItem { Label("Trash", systemImage: "trash") }
                 .tag(AppStateManager.AppTab.trash)
-            
+
             SettingsView()
+                .environmentObject(settings) // Pass settings viewModel to the SettingsView
                 .tabItem { Label("Settings", systemImage: "gear") }
                 .tag(AppStateManager.AppTab.settings)
         }

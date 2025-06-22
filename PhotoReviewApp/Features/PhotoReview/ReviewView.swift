@@ -10,51 +10,73 @@ import CoreData
 import OSLog
 
 struct ReviewView: View {
-    @StateObject var viewModel: ReviewViewModel
+    @StateObject private var viewModel: ReviewViewModel
     private let haptic: any HapticServiceProtocol
-    @Namespace private var cardNamespace
     
-    init(photoService: any PhotoLibraryServiceProtocol,
-         haptic: any HapticServiceProtocol,
-         analytics: any AnalyticsServiceProtocol) {
+    @EnvironmentObject private var settings: SettingsViewModel
+    @EnvironmentObject private var bookmarkManager: CoreDataBookmarkManager
+    @EnvironmentObject private var trashManager: CoreDataTrashManager
+
+    init(
+        photoService: any PhotoLibraryServiceProtocol,
+        haptic: any HapticServiceProtocol,
+        analytics: any AnalyticsServiceProtocol,
+        bookmarkManager: CoreDataBookmarkManager,
+        trashManager: CoreDataTrashManager,
+        settings: SettingsViewModel
+    ) {
+        self.haptic = haptic
         _viewModel = StateObject(wrappedValue: ReviewViewModel(
             photoService: photoService,
             haptic: haptic,
-            analytics: analytics
+            analytics: analytics,
+            bookmarkManager: bookmarkManager,
+            trashManager: trashManager,
+            settings: settings
         ))
-        self.haptic = haptic
     }
+    
+    @Namespace private var cardNamespace
     
     var body: some View {
         ZStack {
-            Color(.systemGroupedBackground)
-                .ignoresSafeArea()
+            Color(.systemGroupedBackground).ignoresSafeArea()
             
-            contentSwitch
+            contentSwitch(viewModel: viewModel)
                 .transition(.opacity.combined(with: .scale(0.9)))
         }
-        .sheet(isPresented: $viewModel.showSettings) {
-            SettingsView()
-                .environmentObject(viewModel)
+        .task {
+            await viewModel.loadInitialPhotos()
         }
-        .task { await viewModel.loadInitialPhotos() }
+        .alert("Confirm Deletion", isPresented: $viewModel.showDeleteAlert) {
+            Button("Cancel", role: .cancel) {
+                viewModel.pendingDeletePhoto = nil
+            }
+            Button("Delete", role: .destructive) {
+                viewModel.confirmDeletion(of: viewModel.pendingDeletePhoto)
+            }
+        }
     }
-    
+
     @ViewBuilder
-    private var contentSwitch: some View {
+    private func contentSwitch(viewModel: ReviewViewModel) -> some View {
         switch viewModel.state {
         case .idle:
             loadingPlaceholder
         case .loading:
             loadingView
         case .loaded(let photos):
-            contentView(photos: photos)
+            if photos.isEmpty {
+                emptyStateView
+            } else {
+                contentView(viewModel: viewModel, photos: photos)
+            }
         case .error(let error):
-            errorView(error: error)
+            errorView(error: error, viewModel: viewModel)
         }
     }
     
-    private func contentView(photos: [Photo]) -> some View {
+    private func contentView(viewModel: ReviewViewModel, photos: [Photo]) -> some View {
         GeometryReader { geometry in
             ZStack {
                 ForEach(photos) { photo in
@@ -97,7 +119,7 @@ struct ReviewView: View {
         }
     }
     
-    private func errorView(error: Error) -> some View {
+    private func errorView(error: Error, viewModel: ReviewViewModel) -> some View {
         VStack(spacing: 20) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 50))
@@ -118,6 +140,19 @@ struct ReviewView: View {
         .padding()
     }
     
+    private var emptyStateView: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "photo.on.rectangle.angled")
+                .font(.system(size: 50))
+                .foregroundColor(.secondary)
+            Text("All Reviewed!")
+                .font(.title2.bold())
+            Text("You've gone through all the photos. Come back later for more!")
+                .multilineTextAlignment(.center)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+    }
         
     func cardStack(photos: [Photo]) -> some View {
         ZStack {
@@ -131,22 +166,6 @@ struct ReviewView: View {
                     .zIndex(photo.id == photos.first?.id ? 1 : 0)
             }
         }
-    }
-        
-    var settingsButton: some View {
-        Button {
-            haptic.impact(.medium)
-            viewModel.showSettings.toggle()
-        } label: {
-            Image(systemName: "gearshape.fill")
-                .font(.title2)
-                .padding()
-                .background(.thickMaterial)
-                .clipShape(Circle())
-                .shadow(radius: 4)
-        }
-        .padding()
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
     }
 }
 
