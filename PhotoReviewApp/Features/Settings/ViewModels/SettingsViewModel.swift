@@ -34,7 +34,7 @@ final class SettingsViewModel: ObservableObject {
     // Added properties to support weekly and monthly selections:
     @Published var selectedWeeklyDays: [Weekday] = []
     @Published var selectedMonthlyDay: Int = 1
-
+    
     private var settingsStore: any SettingsStoreProtocol
     private let trashManager: any TrashManagerProtocol
     private let notificationService: any NotificationServiceProtocol
@@ -58,7 +58,7 @@ final class SettingsViewModel: ObservableObject {
         self.notificationService = notificationService
         loadSettings()
     }
-
+    
     func loadSettings() {
         settingsStore.loadSettings()
         isNotificationsEnabled = settingsStore.isNotificationsEnabled
@@ -68,8 +68,8 @@ final class SettingsViewModel: ObservableObject {
         sortOption = settingsStore.sortOption
         showDeletionConfirmation = settingsStore.showDeletionConfirmation
         // Optionally load these if your store supports them:
-         selectedWeeklyDays = settingsStore.selectedWeeklyDays
-         selectedMonthlyDay = settingsStore.selectedMonthlyDay
+        selectedWeeklyDays = settingsStore.selectedWeeklyDays
+        selectedMonthlyDay = settingsStore.selectedMonthlyDay
     }
     
     func saveSettings() {
@@ -80,8 +80,8 @@ final class SettingsViewModel: ObservableObject {
         settingsStore.sortOption = sortOption
         settingsStore.showDeletionConfirmation = showDeletionConfirmation
         // Optionally save the new properties if needed:
-         settingsStore.selectedWeeklyDays = selectedWeeklyDays
-         settingsStore.selectedMonthlyDay = selectedMonthlyDay
+        settingsStore.selectedWeeklyDays = selectedWeeklyDays
+        settingsStore.selectedMonthlyDay = selectedMonthlyDay
         settingsStore.saveSettings()
         
         if isNotificationsEnabled {

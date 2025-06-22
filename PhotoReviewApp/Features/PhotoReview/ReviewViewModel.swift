@@ -22,7 +22,7 @@ final class ReviewViewModel: ObservableObject {
     private let photoService: any PhotoLibraryServiceProtocol
     private let haptic: any HapticServiceProtocol
     private let analytics: any AnalyticsServiceProtocol
-    private let bookmarkManager: any BookmarkManagerProtocol     
+    private let bookmarkManager: any BookmarkManagerProtocol
     private let trashManager: any TrashManagerProtocol
     private var currentTask: Task<Void, Never>?
     
@@ -96,45 +96,44 @@ final class ReviewViewModel: ObservableObject {
     }
     
     func handleSwipe(_ direction: SwipeDirection, for photo: Photo) {
-      switch direction {
-      case .right:
-        bookmarkManager.toggleBookmark(assetIdentifier: photo.id)
-        haptic.notify(.success)
-
-      case .left:
-        if settings.showDeletionConfirmation {
-          pendingDeletePhoto = photo
-          showDeleteAlert = true
-        } else {
-          trashManager.addToTrash(assetIdentifier: photo.id)
-          haptic.notify(.warning)
-          removePhoto(photo)
+        switch direction {
+        case .right:
+            bookmarkManager.toggleBookmark(assetIdentifier: photo.id)
+            haptic.notify(.success)
+            
+        case .left:
+            if settings.showDeletionConfirmation {
+                pendingDeletePhoto = photo
+                showDeleteAlert = true
+            } else {
+                trashManager.addToTrash(assetIdentifier: photo.id)
+                haptic.notify(.warning)
+                removePhoto(photo)
+            }
         }
-      }
-
-      // if you want instant UI removal even when confirmation is on:
-       withAnimation { state.removePhoto(photo) }
+        
+        withAnimation { state.removePhoto(photo) }
     }
-
-
+    
+    
     private func cancelCurrentTask() {
         currentTask?.cancel()
         currentTask = nil
     }
     
     private func removePhoto(_ photo: Photo) {
-      withAnimation(.spring()) {
-        state.removePhoto(photo)
-      }
+        withAnimation(.spring()) {
+            state.removePhoto(photo)
+        }
     }
-
+    
     func confirmDeletion(of photo: Photo?) {
-      guard let p = photo else { return }
-      trashManager.addToTrash(assetIdentifier: p.id)
-      haptic.notify(.warning)
-      pendingDeletePhoto = nil
-      showDeleteAlert = false
-      removePhoto(p)
+        guard let p = photo else { return }
+        trashManager.addToTrash(assetIdentifier: p.id)
+        haptic.notify(.warning)
+        pendingDeletePhoto = nil
+        showDeleteAlert = false
+        removePhoto(p)
     }
 }
 

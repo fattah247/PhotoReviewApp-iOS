@@ -16,7 +16,7 @@ struct ReviewView: View {
     @EnvironmentObject private var settings: SettingsViewModel
     @EnvironmentObject private var bookmarkManager: CoreDataBookmarkManager
     @EnvironmentObject private var trashManager: CoreDataTrashManager
-
+    
     init(
         photoService: any PhotoLibraryServiceProtocol,
         haptic: any HapticServiceProtocol,
@@ -57,7 +57,7 @@ struct ReviewView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     private func contentSwitch(viewModel: ReviewViewModel) -> some View {
         switch viewModel.state {
@@ -153,7 +153,7 @@ struct ReviewView: View {
         }
         .padding()
     }
-        
+    
     func cardStack(photos: [Photo]) -> some View {
         ZStack {
             ForEach(photos) { photo in

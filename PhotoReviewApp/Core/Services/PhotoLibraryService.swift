@@ -40,7 +40,7 @@ final class PhotoLibraryService: PhotoLibraryServiceProtocol {
         let sortDescriptors = options.sortDescriptors
         let limit = options.limit
         let mediaType = options.mediaType
-
+        
         return try await withCheckedThrowingContinuation { continuation in
             DispatchQueue.global(qos: .userInitiated).async {
                 let fetchOptions = PHFetchOptions()
@@ -54,7 +54,6 @@ final class PhotoLibraryService: PhotoLibraryServiceProtocol {
             }
         }
     }
-
     
     func loadImage(for asset: PHAsset, size: CGSize) async -> UIImage? {
         await withCheckedContinuation { continuation in

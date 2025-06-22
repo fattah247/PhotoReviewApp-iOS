@@ -6,65 +6,65 @@ struct SettingsView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var showTrashConfirmation = false
     @State private var showSaveConfirmation = false
-
+    
     var body: some View {
         NavigationStack {
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: 20) {
-                            notificationsSection
-                            reviewPreferencesSection
-                            repetitionSection
-                            deletionSection
-                            
-                            // Add bottom spacer to ensure content isn't covered
-                            Color.clear.frame(height: 60)
-                        }
-                        .padding(.vertical, 20)
-                        .padding(.horizontal, 16)
-                        // Add the overlay directly to the VStack
-                        .overlay(
-                            saveConfirmationOverlay
-                                .padding(.bottom, 24),
-                            alignment: .bottom
-                        )
-                    }
-                    .background(Color(.systemGroupedBackground).ignoresSafeArea())
-                    .navigationTitle("Settings")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .primaryAction) {
-                            Button {
-                                performSave()
-                            } label: {
-                                Text("Save")
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(settings.hasUnsavedChanges ? .white : .secondary)
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 8)
-                                    .background(
-                                        settings.hasUnsavedChanges
-                                            ? Color.indigo
-                                            : Color(.quaternarySystemFill)
-                                    )
-                                    .clipShape(Capsule())
-                            }
-                            .disabled(!settings.hasUnsavedChanges)
-                            .buttonStyle(.plain)
-                        }
-                    }
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 20) {
+                    notificationsSection
+                    reviewPreferencesSection
+                    repetitionSection
+                    deletionSection
+                    
+                    // Add bottom spacer to ensure content isn't covered
+                    Color.clear.frame(height: 60)
                 }
-                .tint(.indigo)
-                .alert("Confirm Deletion", isPresented: $showTrashConfirmation) {
-                    Button("Cancel", role: .cancel) {}
-                    Button("Delete", role: .destructive) {
-                        settings.emptyTrash()
+                .padding(.vertical, 20)
+                .padding(.horizontal, 16)
+                // Add the overlay directly to the VStack
+                .overlay(
+                    saveConfirmationOverlay
+                        .padding(.bottom, 24),
+                    alignment: .bottom
+                )
+            }
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        performSave()
+                    } label: {
+                        Text("Save")
+                            .fontWeight(.semibold)
+                            .foregroundColor(settings.hasUnsavedChanges ? .white : .secondary)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(
+                                settings.hasUnsavedChanges
+                                ? Color.indigo
+                                : Color(.quaternarySystemFill)
+                            )
+                            .clipShape(Capsule())
                     }
-                } message: {
-                    Text("Are you sure you want to permanently delete all items in the trash?")
+                    .disabled(!settings.hasUnsavedChanges)
+                    .buttonStyle(.plain)
                 }
+            }
+        }
+        .tint(.indigo)
+        .alert("Confirm Deletion", isPresented: $showTrashConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                settings.emptyTrash()
+            }
+        } message: {
+            Text("Are you sure you want to permanently delete all items in the trash?")
+        }
     }
     // MARK: - Sections
-
+    
     private var notificationsSection: some View {
         SectionCard(
             title: LocalizedStrings.notificationsSection,
@@ -80,7 +80,7 @@ struct SettingsView: View {
                 .toggleStyle(SwitchToggleStyle(tint: .indigo))
                 .padding(.vertical, 12)
                 .dynamicTypeSize(.medium ... .accessibility2)
-
+                
                 if settings.isNotificationsEnabled {
                     Divider()
                     SettingRow(icon: "clock",
@@ -93,8 +93,8 @@ struct SettingsView: View {
                         )
                         .labelsHidden()
                     }
-                    .padding(.vertical, 12)
-                    .dynamicTypeSize(.medium ... .accessibility2)
+                               .padding(.vertical, 12)
+                               .dynamicTypeSize(.medium ... .accessibility2)
                 } else {
                     Divider()
                     Text("— \(LocalizedStrings.notificationBody)")
@@ -106,7 +106,7 @@ struct SettingsView: View {
             }
         }
     }
-
+    
     private var reviewPreferencesSection: some View {
         SectionCard(
             title: LocalizedStrings.settingsTitle,
@@ -125,11 +125,11 @@ struct SettingsView: View {
                         onDecrement: { haptic.impact(.light) }
                     )
                 }
-                .padding(.vertical, 12)
-                .dynamicTypeSize(.medium ... .accessibility2)
-
+                           .padding(.vertical, 12)
+                           .dynamicTypeSize(.medium ... .accessibility2)
+                
                 Divider()
-
+                
                 SettingRow(icon: "arrow.up.arrow.down",
                            title: "Sorting Method",
                            iconColor: .teal) {
@@ -141,12 +141,12 @@ struct SettingsView: View {
                     .pickerStyle(.menu)
                     .onChange(of: settings.sortOption) { haptic.impact(.medium) }
                 }
-                .padding(.vertical, 12)
-                .dynamicTypeSize(.medium ... .accessibility2)
+                           .padding(.vertical, 12)
+                           .dynamicTypeSize(.medium ... .accessibility2)
             }
         }
     }
-
+    
     private var repetitionSection: some View {
         SectionCard(
             title: "Repetition Schedule",
@@ -165,9 +165,9 @@ struct SettingsView: View {
                     .pickerStyle(.menu)
                     .onChange(of: settings.repeatInterval) { haptic.impact(.medium) }
                 }
-                .padding(.vertical, 12)
-                .dynamicTypeSize(.medium ... .accessibility2)
-
+                           .padding(.vertical, 12)
+                           .dynamicTypeSize(.medium ... .accessibility2)
+                
                 switch settings.repeatInterval {
                 case .weekly:
                     VStack(alignment: .leading, spacing: 12) {
@@ -179,7 +179,7 @@ struct SettingsView: View {
                         WeekdaySelectionView(selection: $settings.selectedWeeklyDays)
                     }
                     .padding(.vertical, 12)
-
+                    
                 case .monthly:
                     VStack(alignment: .leading, spacing: 12) {
                         Divider()
@@ -190,7 +190,7 @@ struct SettingsView: View {
                         MonthDaySelectionView(selection: $settings.selectedMonthlyDay)
                     }
                     .padding(.vertical, 12)
-
+                    
                 default:
                     EmptyView()
                 }
@@ -198,7 +198,7 @@ struct SettingsView: View {
             .transition(.opacity)
         }
     }
-
+    
     private var deletionSection: some View {
         SectionCard(
             title: "Deletion Settings",
@@ -213,11 +213,11 @@ struct SettingsView: View {
                         .toggleStyle(SwitchToggleStyle(tint: .red))
                         .onChange(of: settings.showDeletionConfirmation) { haptic.impact(.light) }
                 }
-                .padding(.vertical, 12)
-                .dynamicTypeSize(.medium ... .accessibility2)
-
+                           .padding(.vertical, 12)
+                           .dynamicTypeSize(.medium ... .accessibility2)
+                
                 Divider()
-
+                
                 Button(role: .destructive) {
                     haptic.impact(.heavy)
                     showTrashConfirmation = true
@@ -232,38 +232,38 @@ struct SettingsView: View {
             }
         }
     }
-
+    
     // MARK: – Overlays
-
+    
     private var saveConfirmationOverlay: some View {
-            Group {
-                if showSaveConfirmation {
-                    HStack(spacing: 10) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.green)
-                        Text("Settings Saved")
-                            .font(.subheadline.weight(.medium))
-                    }
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 24)
-                    .background(
-                        Capsule()
-                            .fill(.regularMaterial)
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-                            )
-                    )
-                    .shadow(color: .black.opacity(colorScheme == .dark ? 0.2 : 0.1), radius: 8, y: 2)
-                    .transition(.move(edge: .bottom))
+        Group {
+            if showSaveConfirmation {
+                HStack(spacing: 10) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.green)
+                    Text("Settings Saved")
+                        .font(.subheadline.weight(.medium))
                 }
+                .padding(.vertical, 12)
+                .padding(.horizontal, 24)
+                .background(
+                    Capsule()
+                        .fill(.regularMaterial)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                        )
+                )
+                .shadow(color: .black.opacity(colorScheme == .dark ? 0.2 : 0.1), radius: 8, y: 2)
+                .transition(.move(edge: .bottom))
             }
-            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showSaveConfirmation)
         }
-
+        .animation(.spring(response: 0.4, dampingFraction: 0.7), value: showSaveConfirmation)
+    }
+    
     // MARK: – Actions
-
+    
     private func performSave() {
         haptic.notify(.success)
         settings.saveSettings()

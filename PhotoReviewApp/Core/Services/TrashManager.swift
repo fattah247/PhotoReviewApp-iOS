@@ -20,11 +20,11 @@ protocol TrashManagerProtocol: ObservableObject {
 final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency TrashManagerProtocol {
     // MARK: - Published state
     @Published var trashedAssets: [PHAsset] = []
-
+    
     // MARK: - Dependencies
     private let context: NSManagedObjectContext
     private let photoService: any PhotoLibraryServiceProtocol
-
+    
     // MARK: - Init / Deinit
     init(
         context: NSManagedObjectContext,
@@ -38,13 +38,13 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
         // Initial load
         refresh()
     }
-
+    
     deinit {
         PHPhotoLibrary.shared().unregisterChangeObserver(self)
     }
-
+    
     // MARK: - TrashManagerProtocol
-
+    
     func addToTrash(assetIdentifier: String) {
         let assets = PHAsset.fetchAssets(
             withLocalIdentifiers: [assetIdentifier],
@@ -60,7 +60,7 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
             }
         }
     }
-
+    
     @MainActor func restoreFromTrash(assetIdentifier: String) {
         // Note: Photos.app’s “Recently Deleted” can’t be programmatically undeleted.
         // Here we just clear any local DB entry if you had one.
@@ -74,7 +74,7 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
             print("Error restoring from trash:", error)
         }
     }
-
+    
     func emptyTrash() {
         guard let collection = recentlyDeletedCollection() else { return }
         let assets = PHAsset.fetchAssets(in: collection, options: nil)
@@ -88,9 +88,9 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
             }
         }
     }
-
+    
     // MARK: - Helpers
-
+    
     /// Re‐query the “Recently Deleted” smart album and repopulate `trashedAssets`.
     func refresh() {
         guard let collection = recentlyDeletedCollection() else {
@@ -100,7 +100,7 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
         let result = PHAsset.fetchAssets(in: collection, options: nil)
         trashedAssets = result.objects(at: IndexSet(0..<result.count))
     }
-
+    
     /// Workaround rawValue hack for the “Recently Deleted” smart album
     private func recentlyDeletedCollection() -> PHAssetCollection? {
         let rawValue = 1000000201
@@ -113,7 +113,7 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
             )
             .firstObject
     }
-
+    
     private func saveContext() {
         do {
             try context.save()

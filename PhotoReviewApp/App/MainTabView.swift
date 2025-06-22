@@ -17,9 +17,9 @@ struct MainTabView: View {
     @EnvironmentObject var photoService: PhotoLibraryService
     @EnvironmentObject var bookmarkManager: CoreDataBookmarkManager
     @EnvironmentObject var trashManager: CoreDataTrashManager
-
+    
     @EnvironmentObject var settings: SettingsViewModel
-
+    
     var body: some View {
         TabView(selection: $appState.activeTab) {
             ReviewView(
@@ -36,15 +36,15 @@ struct MainTabView: View {
             DashboardView()
                 .tabItem { Label("Stats", systemImage: "chart.bar") }
                 .tag(AppStateManager.AppTab.stats)
-
+            
             BookmarksView()
                 .tabItem { Label("Bookmarks", systemImage: "bookmark") }
                 .tag(AppStateManager.AppTab.bookmarks)
-
+            
             TrashView()
                 .tabItem { Label("Trash", systemImage: "trash") }
                 .tag(AppStateManager.AppTab.trash)
-
+            
             SettingsView()
                 .environmentObject(settings) // Pass settings viewModel to the SettingsView
                 .tabItem { Label("Settings", systemImage: "gear") }
@@ -56,7 +56,7 @@ struct MainTabView: View {
         .onChange(of: appState.deepLinkTarget) { oldValue, newValue in
             handleDeepLinkTarget(newValue)
         }
-
+        
     }
     
     private func handleDeepLinkTarget(_ target: AppStateManager.DeepLinkTarget?) {
@@ -105,12 +105,12 @@ struct MainTabView: View {
             Logger.logError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get root view controller"]))
             return
         }
-
+        
         rootVC.present(hostingController, animated: true) {
             Logger.logError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get root view controller"]))
         }
     }
-
+    
     private func presentTrashDetail(_ asset: PHAsset) {
         let trashDetailView = TrashDetailView(asset: asset)
             .environmentObject(trashManager)
@@ -143,7 +143,7 @@ struct MainTabView: View {
             Logger.logError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get root view controller"]))
             return
         }
-
+        
         rootVC.present(hostingController, animated: true) {
             AppLogger.general.debug("Photo detail view presented")
         }
@@ -163,7 +163,7 @@ struct MainTabView: View {
             Logger.logError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get root view controller"]))
             return
         }
-
+        
         rootVC.present(hostingController, animated: true) {
             AppLogger.general.debug("Photo detail view presented")
         }
@@ -183,13 +183,13 @@ struct MainTabView: View {
             Logger.logError(NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to get root view controller"]))
             return
         }
-
+        
         rootVC.present(hostingController, animated: true) {
             AppLogger.general.debug("Photo detail view presented")
         }
     }
     
-
+    
     struct TrashDetailView: View {
         let asset: PHAsset
         @EnvironmentObject var trashManager: CoreDataTrashManager

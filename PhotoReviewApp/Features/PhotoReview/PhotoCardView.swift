@@ -18,7 +18,7 @@ struct PhotoCardView: View {
     @State private var overlayOpacity: Double = 0
     @State private var swipeIndicatorOffset: CGFloat = 0
     private let maxSwipeIndicatorOffset: CGFloat = 60
-
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
@@ -117,7 +117,7 @@ struct PhotoCardView: View {
                 }
             }
     }
-
+    
     private var metadataOverlay: some View {
         HStack {
             VStack(alignment: .leading, spacing: 6) {
@@ -146,7 +146,7 @@ struct PhotoCardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding([.horizontal, .bottom], 16)
     }
-
+    
     private func handleDragProgress(_ translationWidth: CGFloat) {
         _ = abs(translationWidth) / UIScreen.main.bounds.width
         haptic.prepare()
