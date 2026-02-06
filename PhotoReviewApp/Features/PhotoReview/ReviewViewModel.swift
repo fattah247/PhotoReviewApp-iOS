@@ -96,22 +96,26 @@ final class ReviewViewModel: ObservableObject {
     }
     
     func handleSwipe(_ direction: SwipeDirection, for photo: Photo) {
+        analytics.trackReview()
+
         switch direction {
         case .right:
             bookmarkManager.toggleBookmark(assetIdentifier: photo.id)
+            analytics.trackBookmark()
             haptic.notify(.success)
-            
+
         case .left:
             if settings.showDeletionConfirmation {
                 pendingDeletePhoto = photo
                 showDeleteAlert = true
             } else {
                 trashManager.addToTrash(assetIdentifier: photo.id)
+                analytics.trackDeletion(fileSize: photo.fileSize)
                 haptic.notify(.warning)
                 removePhoto(photo)
             }
         }
-        
+
         withAnimation { state.removePhoto(photo) }
     }
     
@@ -130,6 +134,7 @@ final class ReviewViewModel: ObservableObject {
     func confirmDeletion(of photo: Photo?) {
         guard let p = photo else { return }
         trashManager.addToTrash(assetIdentifier: p.id)
+        analytics.trackDeletion(fileSize: p.fileSize)
         haptic.notify(.warning)
         pendingDeletePhoto = nil
         showDeleteAlert = false
