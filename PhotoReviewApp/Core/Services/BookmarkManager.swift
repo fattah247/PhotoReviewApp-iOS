@@ -28,9 +28,9 @@ final class CoreDataBookmarkManager: ObservableObject, BookmarkManagerProtocol {
     }
     
     func toggleBookmark(assetIdentifier: String) {
-        let request = BookmarkEntity.fetchRequest() as! NSFetchRequest<BookmarkEntity>
+        let request: NSFetchRequest<BookmarkEntity> = BookmarkEntity.fetchRequest()
         request.predicate = NSPredicate(format: "assetIdentifier == %@", assetIdentifier)
-        
+
         do {
             if let existing = try context.fetch(request).first {
                 context.delete(existing)
@@ -43,7 +43,7 @@ final class CoreDataBookmarkManager: ObservableObject, BookmarkManagerProtocol {
             try context.save()
             refreshBookmarks()
         } catch {
-            print("Error toggling bookmark: \(error)")
+            AppLogger.coreData.error("Error toggling bookmark: \(error.localizedDescription, privacy: .public)")
         }
     }
 
@@ -53,13 +53,13 @@ final class CoreDataBookmarkManager: ObservableObject, BookmarkManagerProtocol {
     }
     
     private func refreshBookmarks() {
-        let request = BookmarkEntity.fetchRequest() as! NSFetchRequest<BookmarkEntity>
+        let request: NSFetchRequest<BookmarkEntity> = BookmarkEntity.fetchRequest()
         do {
             let identifiers = try context.fetch(request).compactMap { $0.assetIdentifier }
             let result = PHAsset.fetchAssets(withLocalIdentifiers: identifiers, options: nil)
             bookmarkedAssets = result.objects(at: IndexSet(0..<result.count))
         } catch {
-            print("Error fetching bookmarks: \(error)")
+            AppLogger.coreData.error("Error fetching bookmarks: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

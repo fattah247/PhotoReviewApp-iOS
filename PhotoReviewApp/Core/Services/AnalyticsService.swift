@@ -30,13 +30,12 @@ final class CoreDataAnalyticsService: ObservableObject, AnalyticsServiceProtocol
     }
     
     private func loadAnalytics() {
-        let request = AnalyticsEntity.fetchRequest() as! NSFetchRequest<AnalyticsEntity>
+        let request: NSFetchRequest<AnalyticsEntity> = AnalyticsEntity.fetchRequest()
         do {
             analyticsEntity = try context.fetch(request).first ?? AnalyticsEntity(context: context)
             try context.save()
         } catch {
-            AppLogger.general.error("Error loading analytics: \(error, privacy: .public)")
-            
+            AppLogger.coreData.error("Error loading analytics: \(error.localizedDescription, privacy: .public)")
         }
     }
     
@@ -72,8 +71,7 @@ final class CoreDataAnalyticsService: ObservableObject, AnalyticsServiceProtocol
         do {
             try context.save()
         } catch {
-            AppLogger.general.error("Error saving analytics: \(error, privacy: .public)")
-
+            AppLogger.coreData.error("Error saving analytics: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

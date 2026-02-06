@@ -56,22 +56,22 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
             if success {
                 Task { @MainActor in self.refresh() }
             } else if let error {
-                print("❌ couldn’t trash:", error)
+                AppLogger.general.error("Failed to trash photo: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
     
     @MainActor func restoreFromTrash(assetIdentifier: String) {
-        // Note: Photos.app’s “Recently Deleted” can’t be programmatically undeleted.
+        // Note: Photos.app's "Recently Deleted" can't be programmatically undeleted.
         // Here we just clear any local DB entry if you had one.
-        let request = TrashEntity.fetchRequest() as! NSFetchRequest<TrashEntity>
+        let request: NSFetchRequest<TrashEntity> = TrashEntity.fetchRequest()
         request.predicate = NSPredicate(format: "assetIdentifier == %@", assetIdentifier)
         do {
             try context.fetch(request).forEach { context.delete($0) }
             saveContext()
             refresh()
         } catch {
-            print("Error restoring from trash:", error)
+            AppLogger.coreData.error("Error restoring from trash: \(error.localizedDescription, privacy: .public)")
         }
     }
     
@@ -84,7 +84,7 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
             if success {
                 Task { @MainActor in self.refresh() }
             } else if let error {
-                print("❌ couldn’t empty trash:", error)
+                AppLogger.general.error("Failed to empty trash: \(error.localizedDescription, privacy: .public)")
             }
         }
     }
@@ -118,7 +118,7 @@ final class CoreDataTrashManager: NSObject, ObservableObject, @preconcurrency Tr
         do {
             try context.save()
         } catch {
-            print("Error saving CoreData context in TrashManager:", error)
+            AppLogger.coreData.error("Error saving CoreData context in TrashManager: \(error.localizedDescription, privacy: .public)")
         }
     }
 }

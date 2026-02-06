@@ -45,15 +45,15 @@ struct OnboardingView: View {
                     let status = await photoService.requestAuthorization()
                     switch status {
                     case .authorized:
-                        print("Access authorized.")
+                        AppLogger.general.info("Photo access authorized")
                     case .limited:
-                        print("Access limited.")
+                        AppLogger.general.info("Photo access limited")
                     case .denied, .restricted:
-                        print("Access denied or restricted.")
+                        AppLogger.general.warning("Photo access denied or restricted")
                     case .notDetermined:
-                        print("Status not determined.")
+                        AppLogger.general.info("Photo access not determined")
                     @unknown default:
-                        print("Unknown status.")
+                        AppLogger.general.warning("Unknown photo access status")
                     }
                 }
             }
@@ -79,7 +79,7 @@ struct OnboardingView: View {
             Button("Enable Notifications") {
                 Task {
                     let granted = await notificationService.requestAuthorization()
-                    print("Notification authorization granted:", granted)
+                    AppLogger.general.info("Notification authorization granted: \(granted, privacy: .public)")
                 }
             }
             .contentShape(Rectangle())

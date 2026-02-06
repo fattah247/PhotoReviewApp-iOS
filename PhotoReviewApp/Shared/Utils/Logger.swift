@@ -8,13 +8,20 @@ import Foundation
 import os.log
 
 struct AppLogger {
+    private static let subsystem = Bundle.main.bundleIdentifier ?? "com.photoReviewApp"
+
     static let general = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
+        subsystem: subsystem,
         category: "General"
     )
-    
+
     static let coreData = Logger(
-        subsystem: Bundle.main.bundleIdentifier!,
+        subsystem: subsystem,
         category: "CoreData"
+    )
+
+    static let security = Logger(
+        subsystem: subsystem,
+        category: "Security"
     )
 }
