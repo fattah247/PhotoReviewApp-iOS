@@ -17,41 +17,53 @@ struct PhotoReviewApp: App {
     @StateObject private var hapticService = HapticService()
     @StateObject private var notificationService = NotificationService()
     @StateObject private var dataManager = CoreDataManager.shared
-    
-    // Managers for analytics, bookmarks, and trash.
-    private var analyticsService: CoreDataAnalyticsService {
-        CoreDataAnalyticsService(context: dataManager.viewContext)
-    }
-    
-    private var bookmarkManager: CoreDataBookmarkManager {
-        CoreDataBookmarkManager(
-            context: dataManager.viewContext,
-            photoService: photoService
-        )
-    }
-    
-    private var trashManager: CoreDataTrashManager {
-        CoreDataTrashManager(
-            context: dataManager.viewContext,
-            photoService: photoService
-        )
-    }
-    
-    // Create a SettingsViewModel instance.
-    @StateObject private var settingsViewModel = SettingsViewModel(
-        settingsStore: UserDefaultsSettingsStore(),
-        trashManager: CoreDataTrashManager(
-            context: CoreDataManager.shared.viewContext,
-            photoService: PhotoLibraryService()
-        ),
-        notificationService: NotificationService()
+
+    // Single instances for managers - using StateObject wrapper class
+    @StateObject private var analyticsService = CoreDataAnalyticsService(
+        context: CoreDataManager.shared.viewContext
     )
-    
+
+    @StateObject private var bookmarkManager: CoreDataBookmarkManager
+
+    @StateObject private var trashManager: CoreDataTrashManager
+
+    @StateObject private var settingsViewModel: SettingsViewModel
+
     // Determine if onboarding is needed
     private var needsOnboarding: Bool {
         !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
     }
-    
+
+    init() {
+        // Create shared instances
+        let sharedPhotoService = PhotoLibraryService()
+        let sharedNotificationService = NotificationService()
+        let context = CoreDataManager.shared.viewContext
+
+        let sharedBookmarkManager = CoreDataBookmarkManager(
+            context: context,
+            photoService: sharedPhotoService
+        )
+
+        let sharedTrashManager = CoreDataTrashManager(
+            context: context,
+            photoService: sharedPhotoService
+        )
+
+        let sharedSettingsViewModel = SettingsViewModel(
+            settingsStore: UserDefaultsSettingsStore(),
+            trashManager: sharedTrashManager,
+            notificationService: sharedNotificationService
+        )
+
+        // Initialize StateObjects with shared instances
+        _photoService = StateObject(wrappedValue: sharedPhotoService)
+        _notificationService = StateObject(wrappedValue: sharedNotificationService)
+        _bookmarkManager = StateObject(wrappedValue: sharedBookmarkManager)
+        _trashManager = StateObject(wrappedValue: sharedTrashManager)
+        _settingsViewModel = StateObject(wrappedValue: sharedSettingsViewModel)
+    }
+
     var body: some Scene {
         WindowGroup {
             Group {
@@ -71,8 +83,8 @@ struct PhotoReviewApp: App {
             .environmentObject(photoService)
             .environmentObject(hapticService)
             .environmentObject(notificationService)
-            .environmentObject(settingsViewModel) // Inject SettingsViewModel
-            .environmentObject(analyticsService) // Inject CoreDataAnalyticsService
+            .environmentObject(settingsViewModel)
+            .environmentObject(analyticsService)
             .environmentObject(bookmarkManager)
             .environmentObject(trashManager)
             .environment(\.managedObjectContext, dataManager.viewContext)
