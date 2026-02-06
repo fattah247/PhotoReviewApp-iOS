@@ -11,4 +11,8 @@ class TrashEntity: NSManagedObject {
     @NSManaged var assetIdentifier: String
     @NSManaged var dateDeleted: Date
     @NSManaged var id: UUID
+
+    @nonobjc class func fetchRequest() -> NSFetchRequest<TrashEntity> {
+        NSFetchRequest<TrashEntity>(entityName: "TrashEntity")
+    }
 }

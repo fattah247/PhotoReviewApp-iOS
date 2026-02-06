@@ -13,5 +13,9 @@ class AnalyticsEntity: NSManagedObject {
     @NSManaged var totalReviewed: Int64
     @NSManaged var totalDeleted: Int64
     @NSManaged var totalBookmarked: Int64
+
+    @nonobjc class func fetchRequest() -> NSFetchRequest<AnalyticsEntity> {
+        NSFetchRequest<AnalyticsEntity>(entityName: "AnalyticsEntity")
+    }
 }
 

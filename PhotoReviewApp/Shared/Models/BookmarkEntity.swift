@@ -11,5 +11,9 @@ class BookmarkEntity: NSManagedObject {
     @NSManaged var assetIdentifier: String
     @NSManaged var dateAdded: Date
     @NSManaged var id: UUID
+
+    @nonobjc class func fetchRequest() -> NSFetchRequest<BookmarkEntity> {
+        NSFetchRequest<BookmarkEntity>(entityName: "BookmarkEntity")
+    }
 }
 
