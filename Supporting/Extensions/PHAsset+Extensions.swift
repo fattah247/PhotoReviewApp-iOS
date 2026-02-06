@@ -6,20 +6,28 @@
 //
 import Photos
 
+private let fileSizeCacheLock = NSLock()
 private var fileSizeCache = [String: Int64]()
 
 extension PHAsset {
     var fileSize: Int64 {
         get {
+            fileSizeCacheLock.lock()
             if let size = fileSizeCache[self.localIdentifier] {
+                fileSizeCacheLock.unlock()
                 return size
             }
-            
+            fileSizeCacheLock.unlock()
+
             let resources = PHAssetResource.assetResources(for: self)
             guard let resource = resources.first else { return 0 }
-            
+
             let size = resource.value(forKey: "fileSize") as? Int64 ?? 0
+
+            fileSizeCacheLock.lock()
             fileSizeCache[self.localIdentifier] = size
+            fileSizeCacheLock.unlock()
+
             return size
         }
     }
